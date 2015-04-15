@@ -15,9 +15,9 @@ class Highchart
 		$this->chart['tooltip'] = array();
 		$this->chart['credits'] = array();
 		$this->chart['yAxis'] = array();
-		$this->chart['xAxis'] = array();
-		
-		
+
+		//$this->chart['xAxis'] = array();
+
 		
 		$this->chart['series'] = array();
 
@@ -26,8 +26,10 @@ class Highchart
 		$this->chart['tooltip']['valueSuffix'] ='';
 		$this->chart['title']['text'] = '';
 
+
 		$this->chart['yAxis'][0]['title'] = array();
 		$this->chart['yAxis'][0]['title']['text'] = '';
+
 
 		
 		
@@ -41,22 +43,16 @@ class Highchart
 	}
 	
 
-	function correctData($data, $drilldown='')
+	function correctData($data)
+
 	{
 		$newdata = array();
 		foreach($data as $d)
 		{
-			if(!empty($drilldown)) 
-			{
-				$subdata['y'] = floatval($d);
-				$subdata['drilldown'] = $drilldown;
-				array_push($newdata, $subdata);
-			} 
-			else 
-			{
-				array_push($newdata, floatval($d));	
-			}
+
+			array_push($newdata, floatval($d));
 		}
+		
 
 		return $newdata;
 	
@@ -65,6 +61,9 @@ class Highchart
 	public function setType($type)
 	{
 		$this->chart['chart']['type'] = $type;
+
+		//$this->chart['plotOptions'][$type] = array();
+
 		$this->chart_type = $type;
 	}
 	
@@ -101,10 +100,11 @@ class Highchart
 		$this->chart['title']['text'] = $title;
 	}
 	
-	public function setYAxisLabel($label)
+	public function setYAxisLabel($label, $axis=0)
 	{
 
-		$this->chart['yAxis'][0]['title']['text'] = $label;
+
+		$this->chart['yAxis'][$axis]['title']['text'] = $label;
 	}
 	
 	public function addYAxis ($label = '', $floor = '', $ceiling = '', $interval = '', $opposite = 1)
@@ -165,6 +165,7 @@ class Highchart
 	}
 	
 
+
 	public function addSeries($data, $name='', $color='', $type='', $axis='', $drilldown='', $labels=0)
 	{
 		$newSeries = array();
@@ -192,62 +193,76 @@ class Highchart
 		array_push($this->chart['series'],$newSeries);
 	}
 	
-	public function addDrilldown($data, $name, $color='')
+	/* Requires Drilldown Module */
+	public function addDrilldownSeries($labels, $data, $subdata, $name='', $color='')
 	{
-		$newDrilldown = array();
-		$newDrilldown['series']['name'] = $name;
-		$newDrilldown['series']['data'] = $this->correctData($data, '');
+		$this->chart['xAxis']['type']= 'category';
+	
+		/* Create the series */
+		
+		$newSeries = array();
+		
+		if(!empty($name))
+		{
+			$newSeries['name'] = $name;
+		}
+		if(!empty($color))
+		{
+			$newSeries['color'] = $color;
+		}
+		
+		$newSeries['data'] = array();
+		
+		$ddLabel = array();
 
-		$this->chart['drilldown'] = $newDrilldown;
-
+		for($i = 0; $i < count($data); $i++)
+		{
+			$dataPoint = array();
+			$dataPoint['name'] = $labels[$i];
+			$dataPoint['y'] = $data[$i];
+			$ddLabel[$i] = $labels[$i] . 'DD';
+			$dataPoint['drilldown'] = $ddLabel[$i];
+			array_push($newSeries['data'], $dataPoint);
+		}
 		
 		array_push($this->chart['series'],$newSeries);
+		/* Create the drilldowns */
+		if(!isset($this->chart['drilldown']['series']))
+		{
+			$this->chart['drilldown']['series'] = array();
+		}
+		
+		for($i = 0; $i < count($labels); $i++)
+		{
+			$label = $labels[$i];
+			if(isset($subdata[$label]))
+			{
+				$ddSeries = array();
+				$ddSeries['id'] = $ddLabel[$i];
+				$ddSeries['data'] = array();
+				$subd = $subdata[$label];
+				foreach($subd as $k=>$v)
+				{
+					$ddData = array();
+					$ddData[0] = $k;
+					$ddData[1] = $v;
+					array_push($ddSeries['data'], $ddData);
+				}
+				array_push($this->chart['drilldown']['series'], $ddSeries);
+			}
+		}
+		
+		
+		
 	}
 	
-	/* Requires Drilldown Module */
-	public function addDrilldown($seriesName, $data)
-	{
-		$ser = $this->chart['series'];
-		$ns = count($ser);
-		
-		$ddS = null;
-		for($i = 0; $i < $ns; $i++)
-		{
-			if($ser[$i]['name'] = $seriesName)
-			{
-				$ddS = $ser[$i];
-				break;
-			}
-		}
-		
-		if(!empty($ddS))
-		{
-			$ddS['drilldown'] = "DD" . $seriesName;
-			
-			if(!isset($this->chart['drilldown']['series']))
-			{
-				$this->chart['drilldown']['series'] = array();
-			}
-			
-			$newDD = array();
-			$newDD['id'] = "DD" . $seriesName;
-			$newDD['data'] = array();
-			foreach($data as $k=>$v)
-			{
-				$dp = array();
-				$dp[0] = $k;
-				$dp[1] = $v;
-				array_push($newDD['data'], $dp);
-			}	
-		}
-	}
 	
 	
 	/* Import / Export data functions */
 	
-	public function importArray()
+	public function importArray($array)
 	{
-	
+		$this->chart = $array;
 	}
 	
 	public function getArray()
