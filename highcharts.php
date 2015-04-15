@@ -22,7 +22,7 @@ class Highchart
 		$this->chart['series'] = array();
 
 		$this->chart['credits']['enabled'] = false;
-		$this->chart['tooltip']['shared'] = true;
+		$this->chart['tooltip']['shared'] = false;
 		$this->chart['tooltip']['valueSuffix'] ='';
 		$this->chart['title']['text'] = '';
 
@@ -219,8 +219,8 @@ class Highchart
 		{
 			$dataPoint = array();
 			$dataPoint['name'] = $labels[$i];
-			$dataPoint['y'] = $data[$i];
-			$ddLabel[$i] = $labels[$i] . 'DD';
+			$dataPoint['y'] = floatval($data[$i]);
+			$ddLabel[$i] = $labels[$i] . $name;
 			$dataPoint['drilldown'] = $ddLabel[$i];
 			array_push($newSeries['data'], $dataPoint);
 		}
@@ -240,22 +240,20 @@ class Highchart
 				$ddSeries = array();
 				$ddSeries['id'] = $ddLabel[$i];
 				$ddSeries['data'] = array();
+				$ddSeries['name'] = $name;
 				$subd = $subdata[$label];
 				foreach($subd as $k=>$v)
 				{
 					$ddData = array();
 					$ddData[0] = $k;
-					$ddData[1] = $v;
+					$ddData[1] = floatval($v);
 					array_push($ddSeries['data'], $ddData);
 				}
 				array_push($this->chart['drilldown']['series'], $ddSeries);
 			}
 		}
 		
-		
-		
 	}
-	
 	
 	
 	/* Import / Export data functions */

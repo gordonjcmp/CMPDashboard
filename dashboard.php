@@ -47,6 +47,7 @@ while (!feof($file))
 	array_push($data, fgetcsv($file));
 }
 fclose($file);
+$inverted = invertData($data);
 
 $temprest = array();
 $file = fopen("temprest.csv", "r");
@@ -55,15 +56,31 @@ while (!feof($file))
 	array_push($temprest, fgetcsv($file));
 }
 fclose($file);
-$inverted = invertData($data);
-$invertedtemprest = invertData($temprest);
+
+$permrest = array();
+$file = fopen("permrest.csv", "r");
+while (!feof($file))
+{
+	array_push($permrest, fgetcsv($file));
+}
+fclose($file);
+
+$unrest = array();
+$file = fopen("unrest.csv", "r");
+while (!feof($file))
+{
+	array_push($unrest, fgetcsv($file));
+}
+fclose($file);
 
 $bar = new Highchart('column');
-$bar->addCategories($inverted[0]);
-$bar->addDrilldown($invertedtemprest[1], 'temprest');
-$bar->addSeries($inverted[1],'Temporarily Restricted', $colors[3], '', '', 'temprest');
-$bar->addSeries($inverted[2],'Permanently Restricted', $colors[2]);
-$bar->addSeries($inverted[3],'Unrestricted', $colors[1]);
+//$bar->addCategories($inverted[0]);
+//$bar->addSeries($inverted[1],'Temporarily Restricted', $colors[3], '', '');
+$bar->addDrilldownSeries($inverted[0], $inverted[1], genSubData($temprest), 'Temporarily Restricted', $colors[0]);
+$bar->addDrilldownSeries($inverted[0], $inverted[2], genSubData($permrest), 'Permanently Restricted', $colors[1]);
+$bar->addDrilldownSeries($inverted[0], $inverted[3], genSubData($unrest), 'Unrestricted', $colors[2]);
+//$bar->addSeries($inverted[2],'Permanently Restricted', $colors[2]);
+//$bar->addSeries($inverted[3],'Unrestricted', $colors[1]);
 $bar->addSeries($inverted[4],'Total', $colors[0], 'spline', '', '', 1);
 $charts["endowment"] = $bar->toChart("#endowment");
 
@@ -90,6 +107,23 @@ $charts["headcount"] = $bar->toChart("#headcount");
 
 return $charts;
 
+}
+
+function genSubData($data)
+{
+	$subdata = array();
+	$labels = $data[0];
+	
+	for ($i=1; $i < count($data); $i++)
+	{
+		$newsub = array();
+		for ($j=1; $j < count($data[$i]); $j++)
+		{
+			$newsub[$labels[$j]] = $data[$i][$j];
+		}
+		$subdata[$data[$i][0]] = $newsub;
+	}
+	return $subdata;
 }
 
 function invertData($data)
