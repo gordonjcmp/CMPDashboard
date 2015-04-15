@@ -15,18 +15,22 @@ class Highchart
 		$this->chart['tooltip'] = array();
 		$this->chart['credits'] = array();
 		$this->chart['yAxis'] = array();
+
 		//$this->chart['xAxis'] = array();
-		
-		
+
 		
 		$this->chart['series'] = array();
-		
+
 		$this->chart['credits']['enabled'] = false;
 		$this->chart['tooltip']['shared'] = true;
 		$this->chart['tooltip']['valueSuffix'] ='';
 		$this->chart['title']['text'] = '';
-		$this->chart['yAxis']['title'] = array();
-		$this->chart['yAxis']['title']['text'] = '';
+
+
+		$this->chart['yAxis'][0]['title'] = array();
+		$this->chart['yAxis'][0]['title']['text'] = '';
+
+
 		
 		
 		//If type is set add some more standard settings
@@ -38,14 +42,18 @@ class Highchart
 		}
 	}
 	
+
 	function correctData($data)
+
 	{
 		$newdata = array();
 		foreach($data as $d)
 		{
-			array_push($newdata, intval($d));
+
+			array_push($newdata, floatval($d));
 		}
 		
+
 		return $newdata;
 	
 	}
@@ -53,7 +61,9 @@ class Highchart
 	public function setType($type)
 	{
 		$this->chart['chart']['type'] = $type;
+
 		//$this->chart['plotOptions'][$type] = array();
+
 		$this->chart_type = $type;
 	}
 	
@@ -90,9 +100,32 @@ class Highchart
 		$this->chart['title']['text'] = $title;
 	}
 	
-	public function setYAxisLabel($label)
+	public function setYAxisLabel($label, $axis=0)
 	{
-		$this->chart['yAxis']['title']['text'] = $label;
+
+
+		$this->chart['yAxis'][$axis]['title']['text'] = $label;
+	}
+	
+	public function addYAxis ($label = '', $floor = '', $ceiling = '', $interval = '', $opposite = 1)
+	{
+		$newAxis = array();
+		$newAxis['title']['text'] = $label;
+		if(!empty($floor))
+		{
+		$newAxis['min'] = $floor;
+		}
+		if(!empty($ceiling))
+		{
+		$newAxis['max'] = $ceiling;
+		}
+		if(!empty($interval))
+		{
+		$newAxis['tickInterval'] = $interval;
+		}
+		$newAxis['opposite'] = $opposite;
+		array_push($this->chart['yAxis'], $newAxis);
+
 	}
 	
 	public function addLegend()
@@ -131,10 +164,13 @@ class Highchart
 		
 	}
 	
-	public function addSeries($data, $name='', $color='')
+
+
+	public function addSeries($data, $name='', $color='', $type='', $axis='', $drilldown='', $labels=0)
 	{
 		$newSeries = array();
-		$newSeries['data'] = $this->correctData($data);
+		$newSeries['data'] = $this->correctData($data, $drilldown);
+
 		if(!empty($name))
 		{
 		$newSeries['name'] = $name;
@@ -143,7 +179,17 @@ class Highchart
 		{
 		$newSeries['color'] = $color;
 		}
+
+		if(!empty($type))
+		{
+		$newSeries['type'] = $type;
+		}
+		if(!empty($axis))
+		{
+		$newSeries['yAxis'] = $axis;
+		}
 		
+		$newSeries['dataLabels']['enabled'] = $labels;
 		array_push($this->chart['series'],$newSeries);
 	}
 	
@@ -210,52 +256,13 @@ class Highchart
 		
 	}
 	
-	public function addDrilldown($seriesName, $data)
-	{
-		$ser = $this->chart['series'];
-		$ns = count($ser);
-		
-		$ddS = -1;
-		for($i = 0; $i < $ns; $i++)
-		{
-			var_dump($ser[$i]['name'] . " ?= " . $seriesName);
-			if($ser[$i]['name'] == $seriesName)
-			{
-				$ddS = $i;
-				break;
-			}
-		}
-		
-		if($ddS > -1)
-		{
-			$this->chart['series'][$ddS]['drilldown'] = "DD" . $seriesName;
-			
-			if(!isset($this->chart['drilldown']['series']))
-			{
-				$this->chart['drilldown']['series'] = array();
-			}
-			
-			$newDD = array();
-			$newDD['id'] = "DD" . $seriesName;
-			$newDD['data'] = array();
-			foreach($data as $k=>$v)
-			{
-				$dp = array();
-				$dp[0] = $k;
-				$dp[1] = $v;
-				array_push($newDD['data'], $dp);
-			}
-
-			array_push($this->chart['drilldown']['series'],$newDD);
-		}
-	}
 	
 	
 	/* Import / Export data functions */
 	
-	public function importArray()
+	public function importArray($array)
 	{
-	
+		$this->chart = $array;
 	}
 	
 	public function getArray()
