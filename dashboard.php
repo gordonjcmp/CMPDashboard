@@ -74,13 +74,9 @@ while (!feof($file))
 fclose($file);
 
 $bar = new Highchart('column');
-//$bar->addCategories($inverted[0]);
-//$bar->addSeries($inverted[1],'Temporarily Restricted', $colors[3], '', '');
 $bar->addDrilldownSeries($inverted[0], $inverted[1], genSubData($temprest), 'Temporarily Restricted', $colors[0]);
 $bar->addDrilldownSeries($inverted[0], $inverted[2], genSubData($permrest), 'Permanently Restricted', $colors[1]);
 $bar->addDrilldownSeries($inverted[0], $inverted[3], genSubData($unrest), 'Unrestricted', $colors[2]);
-//$bar->addSeries($inverted[2],'Permanently Restricted', $colors[2]);
-//$bar->addSeries($inverted[3],'Unrestricted', $colors[1]);
 $bar->addSeries($inverted[4],'Total', $colors[0], 'spline', '', '', 1);
 $charts["endowment"] = $bar->toChart("#endowment");
 
@@ -104,6 +100,41 @@ $bar->addSeries($inverted[4],'CMNH', $colors[1]);
 $bar->addSeries($inverted[5],'Total', $colors[0], 'spline',1,'',1);
 $charts["headcount"] = $bar->toChart("#headcount");
 
+
+$data = array();
+$file = fopen("philanthropy.csv","r");
+while (!feof($file))
+{
+	array_push($data, fgetcsv($file));
+}
+fclose($file);	
+
+$inverted = invertData($data);
+$bar = new Highchart('column');
+$bar->setYAxisLabel('Giving ($1,000s)');
+$bar->addYAxis('Total', 8000,16000, 2000);
+$bar->addCategories($inverted[0]);
+$bar->addSeries($inverted[1],'Trustee/Board', $colors[3]);
+$bar->addSeries($inverted[2],'Individual', $colors[2]);
+$bar->addSeries($inverted[3],'Corporate', $colors[1]);
+$bar->addSeries($inverted[4],'Foundation', $colors[1]);
+$bar->addSeries($inverted[5],'Total Gifts and Grants', $colors[0], 'spline', 1, '', 1);
+$charts["philanthropy"] = $bar->toChart("#philanthropy");
+
+
+$data = array();
+$file = fopen("membership.csv","r");
+while (!feof($file))
+{
+	array_push($data, fgetcsv($file));
+}
+fclose($file);	
+
+$inverted = invertData($data);
+$bar = new Highchart('column');
+$bar->addCategories($inverted[0]);
+$bar->addSeries($inverted[1],'Members', $colors[3]);
+$charts["membership"] = $bar->toChart("#membership");
 
 return $charts;
 

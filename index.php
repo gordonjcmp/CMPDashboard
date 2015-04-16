@@ -87,8 +87,8 @@ $charts = getCharts();
 	<div id='Panel' class='main-panel container'>
 		<?php 	
 		setupCharts(
-			array("admissions","endowment","headcount"),
-			array("Admissions","Endowment","Head Count"));
+			array("admissions","endowment","headcount","philanthropy","membership"),
+			array("Admissions","Endowment","Head Count","Philanthropy","Membership"));
 		?>
 
 	</div>
