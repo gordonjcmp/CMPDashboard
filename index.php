@@ -11,9 +11,12 @@ showErrors();
 
 require_once 'dashboard.php';
 
+require_once 'addAnalytics.php';
+
 
 $charts = getCharts();
 
+$charts = addAnaChart($charts); //Add the analytics chart
 
 ?>
 
