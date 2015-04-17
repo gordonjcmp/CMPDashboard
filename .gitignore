@@ -1,6 +1,7 @@
 acctConfig.php
 *.p12
 *.csv
+sqlConfig.php
 /bootstrap
 /google-api
 /highcharts
